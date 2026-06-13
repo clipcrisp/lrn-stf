@@ -78,7 +78,7 @@ generate_specific_item :: proc(item_type: Item_Type) -> Item {
 }
 
 // Procedure overloading seems cool
-// generate_item :: proc {generate_any_item, generate_specific_item}
+generate_item :: proc {generate_any_item, generate_specific_item}
 
 merge_item :: proc() -> Item {
 	item1 = generate_item()
