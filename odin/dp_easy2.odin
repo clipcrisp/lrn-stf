@@ -24,11 +24,10 @@ main :: proc() {
 		input : string = read_input()
 		if input == "G" {
 			fmt.println("Generating Item!")
-			item := generate_any_item()
-			fmt.println(item)
+			item := generate_any_item(random_item_type())
 		} else if input == "M" {
 			fmt.println("Generation Items and Merging!")
-			// TODO item := merge_item()
+			item := merge_items()
 		} else if input == "q" {
 			os.exit(0)
 		} else {
@@ -54,39 +53,39 @@ random_item_type :: proc() -> Item_Type {
 	return r
 }
 
-generate_any_item :: proc() -> Item {
-	rand_type := random_item_type()
+generate_item :: proc(item_type: Item_Type) -> Item {
 	item_stats : Item_Stats
-	if rand_type == Item_Type.POTION {
+	if item_type == Item_Type.POTION {
 		item_stats = new_potion_stats()
-	} else if rand_type == Item_Type.SWORD {
+	} else if item_type == Item_Type.SWORD {
 		item_stats = new_sword_stats()
 	}
 	value := rand.uint_range(1, 100)
 
 	item := Item{
-		item_type = rand_type,
+		item_type = item_type,
 		item_stats = item_stats,
 		value = value,
 	}
 
+	fmt.println(item)
 	return item
 }
 
-generate_specific_item :: proc(item_type: Item_Type) -> Item {
-	// TODO <
+merge_items :: proc() -> Item {
+	item_type := random_item_type()
+	item1 := generate_item(item_type)
+	item2 := generate_item(item_type)
+
+	if item_type == Item_Type.POTION {
+		item := merge_potion(item1, item2)
+	} else if item_type == Item_Type.SWORD {
+		item := merge_sword(item1, item2)
+	}
+
+	fmt.println(item)	
 }
 
-// Procedure overloading seems cool
-generate_item :: proc {generate_any_item, generate_specific_item}
-
-merge_item :: proc() -> Item {
-	item1 = generate_item()
-	item2 = generate_item()
-	// TODO <
-}
-
-// Will expend w/ more props as I go
 Item :: struct {
 	item_type: Item_Type,
 	item_stats: Item_Stats,
@@ -123,6 +122,36 @@ new_potion_stats :: proc() -> Potion_Stats {
 	return potion_stats
 }
 
+merge_potion :: proc(item1 : Item, item2 : Item) -> Item {
+	new_item: Item
+	new_item.item_type = Item_Type.POTION
+	new_stats: Potion_Stats
+
+	if item1.value >= item2.value {
+		new_item.value = item1.value + (item2.value / 2)
+	} else {
+		new_item.value = item2.value + (item1.value / 2)
+	}
+
+	item_attr_select := rand.uint_range(0, 1)
+	switch item_attr_select {
+		case 0:
+			new_stats.attr_to_change = item1.item_stats.attr_to_change
+		case 1:
+			new_stats.attr_to_change = item2.item_stats.attr_to_change
+	}
+
+	if item1.item_stats.amount_of_change >=item2.item_stats.amount_of_change {
+		new_stats.amount_of_change = item1.item_stats.amount_of_change 
+	} else {
+		new_stats.amount_of_change = item2.item_stats.amount_of_change 
+	}
+
+	new_item.item_stats = new_stats
+
+	return new_item
+}
+
 Sword_Stats :: struct {
 	damage: uint,
 	attack_speed: uint,
@@ -135,4 +164,32 @@ new_sword_stats :: proc() -> Sword_Stats {
 	sword_stats.attack_speed = rand.uint_range(1, 5) 
 
 	return sword_stats
+}
+
+merge_potion :: proc(item1 : Item, item2 : Item) -> Item {
+	new_item: Item
+	new_item.item_type = Item_Type.SWORD
+	new_stats: Sword_Stats
+
+	if item1.value >= item2.value {
+		new_item.value = item1.value + (item2.value / 2)
+	} else {
+		new_item.value = item2.value + (item1.value / 2)
+	}
+
+	if item1.item_stats.damage>=item2.item_stats.damage {
+		new_stats.damage = item1.item_stats.damage
+	} else {
+		new_stats.damage = item2.item_stats.damage
+	}
+
+	if item1.item_stats.attack_speed <= item2.item_stats.attack_speed  {
+		new_stats.attack_speed = item1.item_stats.attack_speed 
+	} else {
+		new_stats.attack_speed  = item2.item_stats.attack_speed 
+	}
+
+	new_item.item_stats = new_stats
+	
+	return new_item
 }
