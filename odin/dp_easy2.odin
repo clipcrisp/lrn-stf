@@ -24,7 +24,7 @@ main :: proc() {
 		input : string = read_input()
 		if input == "G" {
 			fmt.println("Generating Item!")
-			item := generate_any_item(random_item_type())
+			item := generate_item(random_item_type())
 		} else if input == "M" {
 			fmt.println("Generation Items and Merging!")
 			item := merge_items()
@@ -73,17 +73,19 @@ generate_item :: proc(item_type: Item_Type) -> Item {
 }
 
 merge_items :: proc() -> Item {
+	new_item : Item
 	item_type := random_item_type()
 	item1 := generate_item(item_type)
 	item2 := generate_item(item_type)
 
 	if item_type == Item_Type.POTION {
-		item := merge_potion(item1, item2)
+		new_item = merge_potion(item1, item2)
 	} else if item_type == Item_Type.SWORD {
-		item := merge_sword(item1, item2)
+		new_item = merge_sword(item1, item2)
 	}
 
-	fmt.println(item)	
+	fmt.println(new_item)	
+	return new_item
 }
 
 Item :: struct {
@@ -126,6 +128,8 @@ merge_potion :: proc(item1 : Item, item2 : Item) -> Item {
 	new_item: Item
 	new_item.item_type = Item_Type.POTION
 	new_stats: Potion_Stats
+	item1_stats := item1.item_stats.(Potion_Stats)
+	item2_stats := item2.item_stats.(Potion_Stats)
 
 	if item1.value >= item2.value {
 		new_item.value = item1.value + (item2.value / 2)
@@ -136,15 +140,15 @@ merge_potion :: proc(item1 : Item, item2 : Item) -> Item {
 	item_attr_select := rand.uint_range(0, 1)
 	switch item_attr_select {
 		case 0:
-			new_stats.attr_to_change = item1.item_stats.attr_to_change
+			new_stats.attr_to_change = item1_stats.attr_to_change
 		case 1:
-			new_stats.attr_to_change = item2.item_stats.attr_to_change
+			new_stats.attr_to_change = item2_stats.attr_to_change
 	}
 
-	if item1.item_stats.amount_of_change >=item2.item_stats.amount_of_change {
-		new_stats.amount_of_change = item1.item_stats.amount_of_change 
+	if item1_stats.amount_of_change >=item2_stats.amount_of_change {
+		new_stats.amount_of_change = item1_stats.amount_of_change 
 	} else {
-		new_stats.amount_of_change = item2.item_stats.amount_of_change 
+		new_stats.amount_of_change = item2_stats.amount_of_change 
 	}
 
 	new_item.item_stats = new_stats
@@ -166,10 +170,12 @@ new_sword_stats :: proc() -> Sword_Stats {
 	return sword_stats
 }
 
-merge_potion :: proc(item1 : Item, item2 : Item) -> Item {
+merge_sword :: proc(item1 : Item, item2 : Item) -> Item {
 	new_item: Item
 	new_item.item_type = Item_Type.SWORD
 	new_stats: Sword_Stats
+	item1_stats := item1.item_stats.(Sword_Stats)
+	item2_stats := item2.item_stats.(Sword_Stats)
 
 	if item1.value >= item2.value {
 		new_item.value = item1.value + (item2.value / 2)
@@ -177,16 +183,16 @@ merge_potion :: proc(item1 : Item, item2 : Item) -> Item {
 		new_item.value = item2.value + (item1.value / 2)
 	}
 
-	if item1.item_stats.damage>=item2.item_stats.damage {
-		new_stats.damage = item1.item_stats.damage
+	if item1_stats.damage>=item2_stats.damage {
+		new_stats.damage = item1_stats.damage
 	} else {
-		new_stats.damage = item2.item_stats.damage
+		new_stats.damage = item2_stats.damage
 	}
 
-	if item1.item_stats.attack_speed <= item2.item_stats.attack_speed  {
-		new_stats.attack_speed = item1.item_stats.attack_speed 
+	if item1_stats.attack_speed <= item2_stats.attack_speed  {
+		new_stats.attack_speed = item1_stats.attack_speed 
 	} else {
-		new_stats.attack_speed  = item2.item_stats.attack_speed 
+		new_stats.attack_speed  = item2_stats.attack_speed 
 	}
 
 	new_item.item_stats = new_stats
